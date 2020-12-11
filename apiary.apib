@@ -5,76 +5,120 @@ HOST: https://polls.apiblueprint.org/
 
 RUTM backend API
 
-## Questions Collection [/questions]
+# Group Объекты
 
-### List All Questions [GET]
+## Получить список объектов [/allobjects]
 
-+ Response 200 (application/json)
+### Список объектов [GET]
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
++ Response 200 (application/json; charset=utf-8)
+    + Attributes(object)
+        - items (array[RutmObject])
 
-### Create a New Question [POST]
+# Group Маршрут
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+## Маршруты [/route/{address}]
 
-+ Request (application/json)
++ Parameters
+    - address: `addr` - Адрес объекта
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
+### Получить маршрут объекта [GET]
 
-+ Response 201 (application/json)
++ Response 200 (application/json; charset=utf-8)
+    + Attributes(Route)
 
-    + Headers
+### Установить маршрут [POST]
++ Request (application/json; charset=utf-8)
+    + Attributes(Route)
+    
++ Response 201
 
-            Location: /questions/2
+# Group История
 
-    + Body
+## Получить историю [/history/{address}]
 
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
-            }
++ Parameters
+    - address: `addr` - Адрес объекта
+
+### Получить историю объекта [GET]
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes(History)
+
+# Group Ограничения
+    
+## Получить ограничения [/restrictions]
+
+### Получить список ограничений [GET]
++ Response 200 (application/json; charset=utf-8)
+    + Attributes(object, fixed-type)
+        - items (array[Restriction]) - Список ограничений
+
+### Создать ограничение [POST]
++ Request (application/json; charset=utf-8)
+    + Attributes(RestrictPolygon)
+    
++ Response 201
+    
+    + Header
+        
+            Location: /restrictions/{id} - URL-escaped путь к созданному ограничению
+
+## Удалить ограничение [/restrictions/{id}]
+
+### Удалить ограничение [DELETE]
++ Response 204
+
+
+# Data Structures
+
+## RutmObjectType(enum[number])
+Тип объекта
+### Members
+- `0` - Неизвестно
+
+## RutmObjectSource(enum[string])
+Источник, откуда получения информация об объекте
+### Members
+- `aznv` - АЗНВ
+- `mavlink` - МAVLink
+
+## Point(object, fixed-type)
+Точка, входит в несколько сущностей
+### Properties
+- index: 0 (number) - Номер точки
+- latitude: 55 (number) - Долгота
+- longitude: 37 (number) - Широта
+
+## Route(object, fixed-type)
+Маршрут
+### Properties
+- points (array[Point]) - Точки маршрута
+
+## History(Route)
+История
+
+## RutmObject(object, fixed-type)
+Описание объекта
+### Properties
+- latitude: `55.66` (number) - Широта
+- longitude: `37.56` (number) - Долгота
+- course: `45` (number) - Курс
+- type: `0` (RutmObjectType) - Тип
+- address: `addr` (string) - Адрес
+- callsign: `fff` (string) - Позывной
+- source: `aznv` (RutmObjectSource) - Источник
+- route (Route) - Маршрут
+- history (History) - История ??
+- conflict_status: `false` (boolean) - true - есть конфликт
+- daa_status: `код ситуации + запрещенный сектор - начало и конец?` (string) - статус DAA
+
+## RestrictPolygon(object, fixed-type)
+Полигон ограничения
+### Properties
+- polygon (array[Point]) - Граница ограниичения
+
+## Restriction(RestrictPolygon, fixed-type)
+Ограничение
+### Properties
+- id: `0` (number) - Идентификатор
